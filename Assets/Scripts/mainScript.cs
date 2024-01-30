@@ -17,6 +17,6 @@ public class mainScript : MonoBehaviour
     // Update is called once per frame
     public void showCpfAlert()
     {
-        txtAlert.text = "asdfgbhnjmk,l.";
+        txtAlert.enabled = false;
     }
 }
