@@ -139,6 +139,8 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   bundleVersion: 1.0.2
   preloadedAssets:
+  - {fileID: 11400000, guid: fa0939e5d30b0e34182fb6a5737c91aa, type: 2}
+  - {fileID: 11400000, guid: 782b70b469ac40b41aa9cdeec47e0752, type: 2}
   - {fileID: 8179283553922214758, guid: 345b06fa4913dde41a871a8ce83505d6, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -174,7 +176,7 @@ PlayerSettings:
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 23
-  AndroidTargetSdkVersion: 0
+  AndroidTargetSdkVersion: 33
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   stripEngineCode: 1

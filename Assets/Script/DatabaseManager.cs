@@ -1,10 +1,14 @@
+using Firebase.Auth;
 using Firebase.Database;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Compression;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Text.RegularExpressions;
 
 public class DatabaseManager : MonoBehaviour
 {
@@ -13,17 +17,19 @@ public class DatabaseManager : MonoBehaviour
     public TMP_InputField Password;
 
     private DatabaseReference dbRederence;
-    // Start is called before the first frame update
+
     void Start()
     {
+        
         dbRederence = FirebaseDatabase.DefaultInstance.RootReference;
     }
 
-    private void CreateUser()
+    public void CreateUser()
     {
+        string fEmail = Regex.Replace(Email.text, "[@.]", "");
         User newUser = new User(Name.text, Email.text, Password.text);
         string json = JsonUtility.ToJson(newUser);
 
-        dbRederence.Child("users").Child(Email.text).SetRawJsonValueAsync(json);
+        dbRederence.Child("users").Child(fEmail).SetRawJsonValueAsync(json);
     }
 }
