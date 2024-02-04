@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,7 @@ using UnityEngine.SceneManagement;
 public class MainScript : MonoBehaviour
 {
     public TMP_InputField inpCpf;
+    public TMP_Text txtAlert;
 
     private DatabaseManager database;
     // Start is called before the first frame update
@@ -17,43 +19,35 @@ public class MainScript : MonoBehaviour
         database.Start();
     }
 
-    public void getHierarchy()
+    public async void starByHierarchy()
     {
         var cpf = inpCpf.text.Replace(".", "").Replace("-", "");
         database.getCpf(cpf);
 
-        string hierarchyValue = "";
+        string hierarchy = await database.checkHierarchy();
 
-        database.checkHierarchy((string hierarchy) =>
+        if (hierarchy != null)
         {
-            Debug.Log(hierarchy);
-            if (hierarchy == null)
+            switch (hierarchy)
             {
-                Debug.Log("Cpf não cadastrado");
-            }
-            else
-            {
-                hierarchyValue = hierarchyValue + hierarchy; 
-            }
-        });
-        loadSceneHierarchy(hierarchyValue);
-    }
+                case "employee":
+                    SceneManager.LoadScene("EmployeeScene");
+                    break;
+                case "manager":
+                    SceneManager.LoadScene("ManagerScene");
+                    break;
+                case "director":
+                    SceneManager.LoadScene("DirectorScene");
+                    break;
+                default:
+                    break;
 
-    private void loadSceneHierarchy(string hierarchyValue)
-    {
-         switch (hierarchyValue)
-         {
-            case "employee":
-                SceneManager.LoadSceneAsync("EmployeeScene");
-                break;
-            case "manager":
-                SceneManager.LoadSceneAsync("ManagerScene");
-                break;
-            case "director":
-                SceneManager.LoadSceneAsync("DirectorScene");
-                break;
-            default:
-                break;
-         }
-    }
+            }
+        }
+        else
+        {
+            txtAlert.enabled = true;
+            txtAlert.text = "CPF não encontrado";
+        }
+    }    
 }

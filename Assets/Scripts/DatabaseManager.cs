@@ -1,12 +1,6 @@
 using Firebase.Database;
 using Firebase.Extensions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using TMPro;
-using Unity.Hierarchy;
-using UnityEngine;
 
 public class DatabaseManager
 {
@@ -25,23 +19,15 @@ public class DatabaseManager
         GloabalCpf = cpf;
     }
 
-    public void checkHierarchy(Action<string> onCallBack)
+    public async Task<string> checkHierarchy()
     {
-        string hierarchy = "";
-        db.Child("users").Child(GloabalCpf).Child("Hierarchy").GetValueAsync().ContinueWith(result =>
+
+        DatabaseReference newUserData = db.Child("users").Child(GloabalCpf).Child("Hierarchy");
+        DataSnapshot snapshot = await newUserData.GetValueAsync();
+        if (snapshot.Exists)
         {
-            if (result.IsCompleted)
-            {
-                Debug.Log("Successful");
-                DataSnapshot snapshot = result.Result;
-                hierarchy = snapshot.Value.ToString();
-                onCallBack.Invoke(hierarchy);
-            }
-            else
-            {
-                Debug.Log("Unseccessful");
-                onCallBack.Invoke(null);
-            }
-        });
+            return snapshot.Value.ToString();
+        }
+        return null;
     }
 }
