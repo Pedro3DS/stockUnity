@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,23 +22,38 @@ public class MainScript : MonoBehaviour
         var cpf = inpCpf.text.Replace(".", "").Replace("-", "");
         database.getCpf(cpf);
 
-        string hierarchy = database.checkHierarchy();
-        Debug.Log(hierarchy);
-        if (hierarchy == null)
+        string hierarchyValue = "";
+
+        database.checkHierarchy((string hierarchy) =>
         {
-            Debug.Log("CPF não encotrado");
-        }
-        else if(hierarchy == "employee")
-        {
-            SceneManager.LoadScene("EmployeeScene");
-        }
-        else if (hierarchy == "manager")
-        {
-            SceneManager.LoadScene("ManagerScene");
-        }
-        else if (hierarchy == "director")
-        {
-            SceneManager.LoadScene("DirectorScene");
-        }
+            Debug.Log(hierarchy);
+            if (hierarchy == null)
+            {
+                Debug.Log("Cpf não cadastrado");
+            }
+            else
+            {
+                hierarchyValue = hierarchyValue + hierarchy; 
+            }
+        });
+        loadSceneHierarchy(hierarchyValue);
+    }
+
+    private void loadSceneHierarchy(string hierarchyValue)
+    {
+         switch (hierarchyValue)
+         {
+            case "employee":
+                SceneManager.LoadSceneAsync("EmployeeScene");
+                break;
+            case "manager":
+                SceneManager.LoadSceneAsync("ManagerScene");
+                break;
+            case "director":
+                SceneManager.LoadSceneAsync("DirectorScene");
+                break;
+            default:
+                break;
+         }
     }
 }

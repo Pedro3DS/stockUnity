@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using TMPro;
 using Unity.Hierarchy;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static UnityEngine.UIElements.VisualElement;
 
 public class DatabaseManager
 {
@@ -27,23 +25,23 @@ public class DatabaseManager
         GloabalCpf = cpf;
     }
 
-    public string checkHierarchy()
+    public void checkHierarchy(Action<string> onCallBack)
     {
         string hierarchy = "";
-
-        try
+        db.Child("users").Child(GloabalCpf).Child("Hierarchy").GetValueAsync().ContinueWith(result =>
         {
-            DataSnapshot snapshot = db.Child("users").Child(GloabalCpf).Child("Hierarchy").GetValueAsync().Result;
-            hierarchy = snapshot.Value.ToString();
-            Debug.Log("Successful");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Unsuccessful: {e.Message}");
-        }
-
-        return hierarchy;
+            if (result.IsCompleted)
+            {
+                Debug.Log("Successful");
+                DataSnapshot snapshot = result.Result;
+                hierarchy = snapshot.Value.ToString();
+                onCallBack.Invoke(hierarchy);
+            }
+            else
+            {
+                Debug.Log("Unseccessful");
+                onCallBack.Invoke(null);
+            }
+        });
     }
-
-
 }
