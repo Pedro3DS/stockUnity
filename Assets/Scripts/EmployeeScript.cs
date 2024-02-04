@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class EmployeeScript : MonoBehaviour
 {
-    private DatabaseManager databaseManager;
+
     void Start()
     {
-        databaseManager.getUserData();
+
     }
 
     // Update is called once per frame

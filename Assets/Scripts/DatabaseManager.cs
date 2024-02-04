@@ -3,75 +3,47 @@ using Firebase.Extensions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
+using Unity.Hierarchy;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.UIElements.VisualElement;
 
-public class DatabaseManager : MonoBehaviour
+public class DatabaseManager
 {
-    public TMP_InputField inpCpf;
-    public string employeeScene;
-    public string managerScene;
-    public string directorScene;
-
 
     private DatabaseReference db;
     private DataSnapshot userData;
-    void Start()
+    private string GloabalCpf;
+    
+    public void Start()
     {
         db = FirebaseDatabase.DefaultInstance.RootReference;
     }
 
-    public void checkHierarchy()
+    public void getCpf(string cpf)
     {
-        string fCpf = inpCpf.text.Replace(".", "").Replace("-", "");
-        db.Child("users").Child(fCpf).GetValueAsync().ContinueWith(result =>
-        {
-            if (result.Result.Value == null)
-            {
-                Debug.Log("CPF não encontrado");
-            }
-            else if (result.IsCompleted)
-            {
-                userData = result.Result;
-                
-            }
-            else if (result.IsFaulted)
-            {
-                Debug.Log("Erro na coneccao");
-            }
-        });
-        string hierarchy = userData.Child("Hierarchy").Value.ToString();
-        if (hierarchy == "employee")
-        {
-            SceneManager.LoadScene(employeeScene);
-
-        }
-        else if (hierarchy == "manager")
-        {
-            SceneManager.LoadScene(managerScene);
-        }
-        else if (hierarchy == "director")
-        {
-            SceneManager.LoadScene(directorScene);
-        }
+        GloabalCpf = cpf;
     }
 
-    public void getUserData()
+    public string checkHierarchy()
     {
-        string fCpf = inpCpf.text.Replace(".", "").Replace("-", "");
-        db.Child("users").Child(fCpf).GetValueAsync().ContinueWith(result =>
+        string hierarchy = "";
+
+        try
         {
-            if (result.IsCompleted)
-            {
-                DataSnapshot userData = result.Result;
-                Debug.Log("asfdghjklçjhgfdsfgjkhgfdsfghjgfd");
-                
-            }
-            else
-            {
-                Debug.Log("Error");
-            }
-        });
+            DataSnapshot snapshot = db.Child("users").Child(GloabalCpf).Child("Hierarchy").GetValueAsync().Result;
+            hierarchy = snapshot.Value.ToString();
+            Debug.Log("Successful");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Unsuccessful: {e.Message}");
+        }
+
+        return hierarchy;
     }
+
+
 }
