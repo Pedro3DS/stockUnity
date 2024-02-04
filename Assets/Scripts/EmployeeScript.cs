@@ -1,0 +1,18 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EmployeeScript : MonoBehaviour
+{
+    private DatabaseManager databaseManager;
+    void Start()
+    {
+        databaseManager.getUserData();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
