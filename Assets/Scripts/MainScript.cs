@@ -12,7 +12,6 @@ public class MainScript : MonoBehaviour
     public TMP_Text txtAlert;
 
     private DatabaseManager database;
-    // Start is called before the first frame update
     void Start()
     {
         database = new DatabaseManager();
@@ -22,11 +21,11 @@ public class MainScript : MonoBehaviour
     public async void starByHierarchy()
     {
         var cpf = inpCpf.text.Replace(".", "").Replace("-", "");
+        PlayerPrefs.SetString("Cpf" ,cpf);
         database.getCpf(cpf);
 
         string hierarchy = await database.checkHierarchy();
-
-        if (hierarchy != null)
+        if (hierarchy != "null")
         {
             switch (hierarchy)
             {
@@ -41,7 +40,6 @@ public class MainScript : MonoBehaviour
                     break;
                 default:
                     break;
-
             }
         }
         else

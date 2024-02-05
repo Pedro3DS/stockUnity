@@ -28,6 +28,6 @@ public class DatabaseManager
         {
             return snapshot.Value.ToString();
         }
-        return null;
+        return "null";
     }
 }
