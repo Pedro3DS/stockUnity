@@ -1,12 +1,13 @@
 using Firebase.Database;
 using Firebase.Extensions;
+using NUnit.Framework;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public class DatabaseManager
 {
 
     private DatabaseReference db;
-    private DataSnapshot userData;
     private string GloabalCpf;
     
     public void Start()
@@ -29,5 +30,16 @@ public class DatabaseManager
             return snapshot.Value.ToString();
         }
         return "null";
+    }
+
+    public async Task<DataSnapshot> getUserData()
+    {
+        DataSnapshot snapshot = await db.Child("users").Child(GloabalCpf).GetValueAsync();
+        if(snapshot.Exists)
+        {
+            return snapshot;
+        }
+        else { return null; }
+        
     }
 }
