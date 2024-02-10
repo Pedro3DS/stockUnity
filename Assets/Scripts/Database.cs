@@ -36,11 +36,15 @@ public class DatabaseManager
         return "null";
     }
 
-    public DataSnapshot getUserData(string cpf)
+    public async Task<DataSnapshot> getUserData(string cpf)
     {
-        DataSnapshot snapshot = db.Child("users").Child(cpf).GetValueAsync().Result;
-        return snapshot;
-
+        DatabaseReference newUserData = db.Child("users").Child(cpf);
+        DataSnapshot snapshot = await newUserData.GetValueAsync();
+        if (snapshot.Exists)
+        {
+            return snapshot;
+        }
+        return null;
         
     }
 }

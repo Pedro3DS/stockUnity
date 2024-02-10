@@ -18,13 +18,15 @@ public class EmployeeScript : MonoBehaviour
 
     private DatabaseManager db;
     private string cpfT = "123";
-    void Start()
+
+    async void Start()
     {
         Debug.Log("hbhbhjbhj");
         db = new DatabaseManager();
         db.Start();
 
-        userSnapshot = db.getUserData(cpfT);
+        userSnapshot = await db.getUserData(cpfT);
+        Debug.Log("aaaaaaaaaaaaaa");
     }
 
     public void setUserInformations()
@@ -32,8 +34,6 @@ public class EmployeeScript : MonoBehaviour
         userName.text = userSnapshot.Child("Name").Value.ToString();
         userEmail.text = userSnapshot.Child("Email").Value.ToString();
         userHierarchy.text = userSnapshot.Child("Hierarchy").Value.ToString();
-
-        Debug.Log("ae poraaaaaa");
 
     }
 
