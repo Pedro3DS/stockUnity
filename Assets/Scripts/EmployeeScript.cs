@@ -15,10 +15,13 @@ public class EmployeeScript : MonoBehaviour
     public TMP_Text userHierarchy;
     public RawImage userImg;
 
+    public RawImage userBtnImg;
+
+
     private DataSnapshot userSnapshot;
 
     private DatabaseManager db;
-    private string cpfT = "123";
+    private string cpfT = "627";
 
     async void Start()
     {
@@ -26,11 +29,11 @@ public class EmployeeScript : MonoBehaviour
         db.Start();
 
         userSnapshot = await db.getUserData(cpfT);
+        StartCoroutine(setUserPhotoProfile());
     }
 
     public void setUserInformations()
     {
-        userImg = gameObject.GetComponent<RawImage>();
         userName.text = userSnapshot.Child("Name").Value.ToString();
         userEmail.text = userSnapshot.Child("Email").Value.ToString();
         if (userSnapshot.Child("Hierarchy").Value.ToString() == "employee")
@@ -38,6 +41,11 @@ public class EmployeeScript : MonoBehaviour
             userHierarchy.text = "Funcionario Normal";
         }
         StartCoroutine(setUserPhotoProfile());
+        
+    }
+
+    public void changeUserProfilePhoto()
+    {
         
     }
 
@@ -53,6 +61,7 @@ public class EmployeeScript : MonoBehaviour
         else
         {
             Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+            userBtnImg.texture = texture;
             userImg.texture = texture;
         }
     }
