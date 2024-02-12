@@ -8,6 +8,9 @@ using TMPro;
 using System;
 using UnityEngine.Networking;
 using static NativeGallery;
+using Firebase.Storage;
+using System.Threading;
+using System.IO;
 
 public class EmployeeScript : MonoBehaviour
 {
@@ -19,17 +22,26 @@ public class EmployeeScript : MonoBehaviour
     public RawImage userBtnImg;
 
 
+    private FirebaseStorage storage;
+    private StorageReference storageReference;
+
+    private string userAvatar;
+
     private DataSnapshot userSnapshot;
 
     private DatabaseManager db;
+    private string cpfT = "123";
 
     async void Start()
     {
         db = new DatabaseManager();
         db.Start();
 
-        userSnapshot = await db.getUserData(PlayerPrefs.GetString("Cpf"));
+        userSnapshot = await db.getUserData(cpfT);
         StartCoroutine(setUserPhotoProfile());
+
+        storage = FirebaseStorage.DefaultInstance;
+        storageReference = storage.GetReferenceFromUrl("gs://stockunity-46765.appspot.com");
     }
 
     public void setUserInformations()
@@ -46,24 +58,44 @@ public class EmployeeScript : MonoBehaviour
 
     public void changeUserProfilePhoto()
     {
-        NativeGallery.GetImageFromGallery((path) =>
+        NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
         {
-            Texture2D texture = NativeGallery.LoadImageAtPath(path);
-            if (texture == null)
+            if (path != null)
             {
-                Debug.Log("Couldn't load texture from " + path);
-                return;
+                string fileName = System.IO.Path.GetFileName(path);
+                userAvatar = path;
+                Debug.Log(userAvatar);
+                // Create Texture from selected image
+                Texture2D texture = NativeGallery.LoadImageAtPath(path);
+                userImg.texture = texture;
+                if (texture == null)
+                {
+                    Debug.Log("Couldn't load texture from " + path);
+                    return;
+                }
             }
-            userImg.texture = texture;
+        }, "Select a PNG image", "image/png");
 
+        Debug.Log("Permission result: " + permission);
+       
+    }
 
-        });
+    public async void updateUserInformations()
+    {
+        db.updateUserInformations(cpfT, userName.text, userEmail.text, userAvatar);
+
+        StorageReference uploadRef = storageReference.Child(userAvatar);
+        await uploadRef.PutFileAsync(userAvatar);
+
+        userSnapshot = await db.getUserData(cpfT);
+        StartCoroutine(setUserPhotoProfile());
+
     }
 
     private IEnumerator setUserPhotoProfile()
     {
         Debug.Log(userSnapshot.Child("ProfilePhoto").Value.ToString());
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/" + userSnapshot.Child("ProfilePhoto").Value.ToString() + "?alt=media&token=");
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(userSnapshot.Child("ProfilePhoto").Value.ToString());
         yield return request.SendWebRequest();
         if (request.result == UnityWebRequest.Result.ProtocolError)
         {
