@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 using TMPro;
 using System;
 using UnityEngine.Networking;
+using static NativeGallery;
 
 public class EmployeeScript : MonoBehaviour
 {
@@ -21,14 +22,13 @@ public class EmployeeScript : MonoBehaviour
     private DataSnapshot userSnapshot;
 
     private DatabaseManager db;
-    private string cpfT = "627";
 
     async void Start()
     {
         db = new DatabaseManager();
         db.Start();
 
-        userSnapshot = await db.getUserData(cpfT);
+        userSnapshot = await db.getUserData(PlayerPrefs.GetString("Cpf"));
         StartCoroutine(setUserPhotoProfile());
     }
 
@@ -46,7 +46,18 @@ public class EmployeeScript : MonoBehaviour
 
     public void changeUserProfilePhoto()
     {
-        
+        NativeGallery.GetImageFromGallery((path) =>
+        {
+            Texture2D texture = NativeGallery.LoadImageAtPath(path);
+            if (texture == null)
+            {
+                Debug.Log("Couldn't load texture from " + path);
+                return;
+            }
+            userImg.texture = texture;
+
+
+        });
     }
 
     private IEnumerator setUserPhotoProfile()

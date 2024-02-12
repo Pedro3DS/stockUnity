@@ -11,9 +11,9 @@ Library: C:\Users\pedro\OneDrive\Documentos\GitHub\stockUnity\Temp\BurstOutput\t
 --assembly-defines=Firebase.App;
 --assembly-defines=Firebase.Database;
 --assembly-defines=Firebase.Platform;
---assembly-defines=Firebase.Storage;
 --assembly-defines=Mono.Security;
 --assembly-defines=mscorlib;
+--assembly-defines=NativeGallery.Runtime;
 --assembly-defines=System.Configuration;
 --assembly-defines=System.Core;
 --assembly-defines=System;
