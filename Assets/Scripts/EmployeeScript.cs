@@ -11,6 +11,11 @@ using static NativeGallery;
 using Firebase.Storage;
 using System.Threading;
 using System.IO;
+using UnityEngine.Events;
+using System.Globalization;
+using Firebase.Extensions;
+using NativeFilePickerNamespace;
+using Unity.VisualScripting;
 
 public class EmployeeScript : MonoBehaviour
 {
@@ -25,12 +30,17 @@ public class EmployeeScript : MonoBehaviour
     private FirebaseStorage storage;
     private StorageReference storageReference;
 
-    private string userAvatar;
 
     private DataSnapshot userSnapshot;
 
     private DatabaseManager db;
     private string cpfT = "123";
+
+    public UnityEvent Function_onPicked_Return; // Visual Scripting trigger [On Unity Event]
+    public UnityEvent Function_onSaved_Return; // Visual Scripting trigger [On Unity Event]
+
+    public NativeFilePicker.Permission permission; // Permission to access Camera Roll
+
 
     async void Start()
     {
@@ -53,39 +63,58 @@ public class EmployeeScript : MonoBehaviour
             userHierarchy.text = "Funcionario Normal";
         }
         StartCoroutine(setUserPhotoProfile());
-        
     }
 
-    public void changeUserProfilePhoto()
+    public void changeUserPhoto()
     {
-        NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
-        {
-            if (path != null)
-            {
-                string fileName = System.IO.Path.GetFileName(path);
-                userAvatar = path;
-                Debug.Log(userAvatar);
-                // Create Texture from selected image
-                Texture2D texture = NativeGallery.LoadImageAtPath(path);
-                userImg.texture = texture;
-                if (texture == null)
-                {
-                    Debug.Log("Couldn't load texture from " + path);
-                    return;
-                }
-            }
-        }, "Select a PNG image", "image/png");
+        StartCoroutine(ShowLoadDialogCoroutine());
+    }
 
-        Debug.Log("Permission result: " + permission);
-       
+    IEnumerator ShowLoadDialogCoroutine()
+    {
+
+
+        yield return NativeFilePicker.PickFile((paths) =>
+        {
+            if (paths != null && paths.Length > 0)
+            {
+                Debug.Log("File Selected: " + paths[0]);
+
+                // Read the selected file into bytes
+                byte[] bytes = File.ReadAllBytes(paths);
+
+                // Editing Metadata
+                var newMetadata = new MetadataChange();
+                newMetadata.ContentType = "image/jpeg";
+
+                // Create a reference to where the file needs to be uploaded
+                StorageReference uploadRef = storageReference.Child("uploads/" + cpfT + ".jpeg");
+                Debug.Log("File upload started");
+
+                // Upload the file to Firebase Storage
+                uploadRef.PutBytesAsync(bytes, newMetadata).ContinueWithOnMainThread((task) =>
+                {
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        Debug.LogError(task.Exception.ToString());
+                    }
+                    else
+                    {
+                        Debug.Log("File Uploaded Successfully!");
+                        StartCoroutine(setUserPhotoProfile());
+                    }
+                });
+            }
+            else
+            {
+                Debug.Log("File selection canceled");
+            }
+        });
     }
 
     public async void updateUserInformations()
     {
-        db.updateUserInformations(cpfT, userName.text, userEmail.text, userAvatar);
-
-        StorageReference uploadRef = storageReference.Child(userAvatar);
-        await uploadRef.PutFileAsync(userAvatar);
+        db.updateUserInformations(cpfT, userName.text, userEmail.text);
 
         userSnapshot = await db.getUserData(cpfT);
         StartCoroutine(setUserPhotoProfile());
@@ -94,8 +123,7 @@ public class EmployeeScript : MonoBehaviour
 
     private IEnumerator setUserPhotoProfile()
     {
-        Debug.Log(userSnapshot.Child("ProfilePhoto").Value.ToString());
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture(userSnapshot.Child("ProfilePhoto").Value.ToString());
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/uploads%2F" + userSnapshot.Child("ProfilePhoto").Value.ToString() + "?alt=media&token=");
         yield return request.SendWebRequest();
         if (request.result == UnityWebRequest.Result.ProtocolError)
         {
@@ -108,5 +136,9 @@ public class EmployeeScript : MonoBehaviour
             userImg.texture = texture;
         }
     }
+
+
+
+    
 
 }

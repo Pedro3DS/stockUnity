@@ -7611,7 +7611,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2105166809}
         m_TargetAssemblyTypeName: EmployeeScript, Assembly-CSharp
-        m_MethodName: changeUserProfilePhoto
+        m_MethodName: changeUserPhoto
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9516,6 +9516,13 @@ MonoBehaviour:
   userHierarchy: {fileID: 553793435}
   userImg: {fileID: 808009776}
   userBtnImg: {fileID: 811266100}
+  Function_onPicked_Return:
+    m_PersistentCalls:
+      m_Calls: []
+  Function_onSaved_Return:
+    m_PersistentCalls:
+      m_Calls: []
+  permission: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

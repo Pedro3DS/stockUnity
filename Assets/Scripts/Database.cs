@@ -48,10 +48,9 @@ public class DatabaseManager
         
     }
 
-    public void updateUserInformations(string cpf, string name, string email, string profilePhotoName)
+    public void updateUserInformations(string cpf, string name, string email)
     {
         db.Child("users").Child(cpf).Child("Name").SetValueAsync(name);
         db.Child("users").Child(cpf).Child("Email").SetValueAsync(email);
-        db.Child("users").Child(cpf).Child("ProfilePhoto").SetValueAsync(profilePhotoName);
     }
 }
