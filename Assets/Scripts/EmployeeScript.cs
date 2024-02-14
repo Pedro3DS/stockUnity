@@ -24,6 +24,8 @@ public class EmployeeScript : MonoBehaviour
     public TMP_Text userHierarchy;
     public RawImage userImg;
 
+    public GameObject usersAreaPanel;
+
     public RawImage userBtnImg;
 
 
@@ -119,6 +121,10 @@ public class EmployeeScript : MonoBehaviour
         userSnapshot = await db.getUserData(cpfT);
         StartCoroutine(setUserPhotoProfile());
 
+    }
+
+    public void createUsersButtonUsersArea()
+    {
     }
 
     private IEnumerator setUserPhotoProfile()
