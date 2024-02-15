@@ -14,6 +14,7 @@ using System.IO;
 using UnityEngine.Events;
 using System.Globalization;
 using Firebase.Extensions;
+using Unity.VisualScripting;
 
 public class EmployeeScript : MonoBehaviour
 {
@@ -122,13 +123,13 @@ public class EmployeeScript : MonoBehaviour
         db.updateUserInformations(cpfT, userName.text, userEmail.text);
 
         userSnapshot = await db.getUserData(cpfT);
-        StartCoroutine(setUserPhotoProfile());
-
     }
 
     public async void usersPanel()
     {
+        Debug.Log(usersAreaPanel.GetComponentsInChildren<GameObject>());
         DataSnapshot usersSnapshots = await db.getUsersDatas();
+
 
         foreach (var usersKeys in usersSnapshots.Children) 
         {
@@ -140,7 +141,13 @@ public class EmployeeScript : MonoBehaviour
     public void createUsersInfos(string name, string hierarchy)
     {
         GameObject newUserInfotmation = Instantiate(usersBtnModel, usersAreaPanel);
+        newUserInfotmation.SetActive(true);
         newUserInfotmation.GetComponentInChildren<TMP_Text>().text = $"{name}\n{hierarchy}";
+    }
+
+    public void removeUser(GameObject thisObject)
+    {
+        Destroy(thisObject);
     }
 
     private IEnumerator setUserPhotoProfile()
@@ -158,6 +165,7 @@ public class EmployeeScript : MonoBehaviour
             userImg.texture = texture;
         }
     }
+
 
 
 
