@@ -14,8 +14,6 @@ using System.IO;
 using UnityEngine.Events;
 using System.Globalization;
 using Firebase.Extensions;
-using NativeFilePickerNamespace;
-using Unity.VisualScripting;
 
 public class EmployeeScript : MonoBehaviour
 {
@@ -24,7 +22,9 @@ public class EmployeeScript : MonoBehaviour
     public TMP_Text userHierarchy;
     public RawImage userImg;
 
-    public GameObject usersAreaPanel;
+    public GameObject usersBtnModel;
+    public Transform usersAreaPanel;
+    public Dropdown usersHierarchyChoices;
 
     public RawImage userBtnImg;
 
@@ -123,8 +123,27 @@ public class EmployeeScript : MonoBehaviour
 
     }
 
-    public void createUsersButtonUsersArea()
+    public async void usersPanel()
     {
+        DataSnapshot usersSnapshots = await db.getUsersDatas();
+
+        foreach (var usersKeys in usersSnapshots.Children) 
+        {
+            createUsersInfos(usersSnapshots.Child(usersKeys.Key).Child("Name").Value.ToString(), usersSnapshots.Child(usersKeys.Key).Child("Hierarchy").Value.ToString());
+        }
+
+
+        List<string> hierarchys = new List<string>();
+        hierarchys.Add("employee");
+        hierarchys.Add("manager");
+        usersHierarchyChoices.AddOptions(hierarchys);
+
+    }
+
+    public void createUsersInfos(string name, string hierarchy)
+    {
+        GameObject newUserInfotmation = Instantiate(usersBtnModel, usersAreaPanel);
+        newUserInfotmation.GetComponentInChildren<TMP_Text>().text = $"{name}\n{hierarchy}";
     }
 
     private IEnumerator setUserPhotoProfile()

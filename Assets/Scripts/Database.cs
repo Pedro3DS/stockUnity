@@ -53,4 +53,16 @@ public class DatabaseManager
         db.Child("users").Child(cpf).Child("Name").SetValueAsync(name);
         db.Child("users").Child(cpf).Child("Email").SetValueAsync(email);
     }
+
+    public async Task<DataSnapshot> getUsersDatas()
+    {
+        DatabaseReference newUsersDatas = db.Child("users");
+        DataSnapshot snapshot = await newUsersDatas.GetValueAsync();
+        if (snapshot.Exists)
+        {
+            return snapshot;
+        }
+        return null;
+
+    }
 }
