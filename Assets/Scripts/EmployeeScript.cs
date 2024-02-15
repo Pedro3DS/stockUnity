@@ -17,21 +17,24 @@ using Firebase.Extensions;
 
 public class EmployeeScript : MonoBehaviour
 {
+    /*User Panel*/
     public TMP_InputField userName;
     public TMP_InputField userEmail;
     public TMP_Text userHierarchy;
     public RawImage userImg;
 
+
+    /*Employees Panel*/
     public GameObject usersBtnModel;
     public Transform usersAreaPanel;
     public Dropdown usersHierarchyChoices;
 
+    /*All Panel*/
     public RawImage userBtnImg;
 
 
     private FirebaseStorage storage;
     private StorageReference storageReference;
-
 
     private DataSnapshot userSnapshot;
 
@@ -131,12 +134,6 @@ public class EmployeeScript : MonoBehaviour
         {
             createUsersInfos(usersSnapshots.Child(usersKeys.Key).Child("Name").Value.ToString(), usersSnapshots.Child(usersKeys.Key).Child("Hierarchy").Value.ToString());
         }
-
-
-        List<string> hierarchys = new List<string>();
-        hierarchys.Add("employee");
-        hierarchys.Add("manager");
-        usersHierarchyChoices.AddOptions(hierarchys);
 
     }
 
