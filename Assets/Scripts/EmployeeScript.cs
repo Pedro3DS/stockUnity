@@ -109,7 +109,7 @@ public class EmployeeScript : MonoBehaviour
                 newMetadata.ContentType = "image/jpeg";
 
                 // Create a reference to where the file needs to be uploaded
-                StorageReference uploadRef = storageReference.Child("uploads/" + cpfT + ".jpeg");
+                StorageReference uploadRef = storageReference.Child("uploads/" + PlayerPrefs.GetString("Cpf") + ".jpeg");
                 Debug.Log("File upload started");
 
                 // Upload the file to Firebase Storage
@@ -135,9 +135,9 @@ public class EmployeeScript : MonoBehaviour
 
     public async void updateUserInformations()
     {
-        db.updateUserInformations(cpfT, userName.text, userEmail.text);
+        db.updateUserInformations(PlayerPrefs.GetString("Cpf"), userName.text, userEmail.text);
 
-        userSnapshot = await db.getUserData(cpfT);
+        userSnapshot = await db.getUserData(PlayerPrefs.GetString("Cpf"));
     }
 
     public async void usersPanel()
