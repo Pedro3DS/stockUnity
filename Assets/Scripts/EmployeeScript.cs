@@ -19,6 +19,7 @@ using Unity.VisualScripting;
 public class EmployeeScript : MonoBehaviour
 {
     /*User Panel*/
+    [Header("User Panel")]
     public TMP_InputField userName;
     public TMP_InputField userEmail;
     public TMP_Text userHierarchy;
@@ -26,11 +27,25 @@ public class EmployeeScript : MonoBehaviour
 
 
     /*Employees Panel*/
+    [Header("Employees Panel")]
     public GameObject usersBtnModel;
     public Transform usersAreaPanel;
     public Dropdown usersHierarchyChoices;
+    public GameObject removeUserConfirm;
+    public UnityEngine.UI.Button removeUserBtnConfirm;
+    private GameObject userToRemove;
+
+    public TMP_Text newUserNameAlert;
+    public TMP_Text newUserEmailAlert;
+    public TMP_Text newUserCpfAlert;
+
+    public TMP_InputField newUserName;
+    public TMP_InputField newUserEmail;
+    public TMP_InputField newUserCpf;
+    public TMP_Dropdown newUserHierarchy;
 
     /*All Panel*/
+    [Header("Geral Panel's")]
     public RawImage userBtnImg;
 
 
@@ -53,7 +68,7 @@ public class EmployeeScript : MonoBehaviour
         db = new DatabaseManager();
         db.Start();
 
-        userSnapshot = await db.getUserData(cpfT);
+        userSnapshot = await db.getUserData(PlayerPrefs.GetString("Cpf"));
         StartCoroutine(setUserPhotoProfile());
 
         storage = FirebaseStorage.DefaultInstance;
@@ -127,37 +142,117 @@ public class EmployeeScript : MonoBehaviour
 
     public async void usersPanel()
     {
+        clearUsersAreaPanel();
 
+        DataSnapshot usersSnapshots = await db.getUsersDatas();
+
+        foreach (var usersKeys in usersSnapshots.Children) 
+        {
+            createUsersInfos(usersKeys.Key, usersSnapshots.Child(usersKeys.Key).Child("Name").Value.ToString(), usersSnapshots.Child(usersKeys.Key).Child("Hierarchy").Value.ToString());
+        }
+
+    }
+
+    private void clearUsersAreaPanel()
+    {
         Transform childTransforms = usersAreaPanel.GetComponentInChildren<Transform>();
 
         foreach (Transform childTransform in childTransforms)
         {
             Destroy(childTransform.gameObject);
         }
-
-
-
-        DataSnapshot usersSnapshots = await db.getUsersDatas();
-
-
-        foreach (var usersKeys in usersSnapshots.Children) 
-        {
-            createUsersInfos(usersSnapshots.Child(usersKeys.Key).Child("Name").Value.ToString(), usersSnapshots.Child(usersKeys.Key).Child("Hierarchy").Value.ToString());
-        }
-
-        
     }
 
-    public void createUsersInfos(string name, string hierarchy)
+    private void createUsersInfos(string cpf, string name, string hierarchy)
     {
         GameObject newUserInfotmation = Instantiate(usersBtnModel, usersAreaPanel);
         newUserInfotmation.SetActive(true);
+        newUserInfotmation.name = cpf;
         newUserInfotmation.GetComponentInChildren<TMP_Text>().text = $"{name}\n{hierarchy}";
+        StartCoroutine(setEmployeesPhotoProfile(cpf, newUserInfotmation));
+        
     }
 
-    public void removeUser(GameObject thisObject)
+    public async void setRemoveUserName(GameObject thisObject)
     {
-        Destroy(thisObject);
+        removeUserConfirm.SetActive(true);
+        DataSnapshot removeUserSnapshot = await db.getUserData(thisObject.name);
+        if (userSnapshot.Key == thisObject.name)
+        {
+            removeUserConfirm.GetComponentInChildren<TMP_Text>().text = $"Você não pode se deletar";
+            removeUserBtnConfirm.gameObject.SetActive(false);
+        }
+        else
+        {
+            removeUserConfirm.GetComponentInChildren<TMP_Text>().text = $"Deseja remover o usuario {removeUserSnapshot.Child("Name").Value.ToString()}";
+            removeUserBtnConfirm.gameObject.SetActive(true);
+        } 
+        Debug.Log(thisObject);
+        userToRemove = thisObject.gameObject;
+
+    }
+
+    public void removeUser()
+    {
+        db.removeUser(userToRemove.name);
+        Destroy(userToRemove);
+        removeUserConfirm.SetActive(false);
+    }
+
+    public void createNewUser()
+    {
+        string name = newUserName.text;
+        string email = newUserEmail.text;
+        string cpf = newUserCpf.text;
+        int hierarchyNum = newUserHierarchy.value;
+        string hierarchy = "";
+
+        if (hierarchyNum == 0)
+        {
+            hierarchy = "employee";
+        }
+        else
+        {
+            hierarchy = "manager";
+        }
+
+        if (name == "" || email == "" || cpf == "")
+        {
+            Debug.Log("Preencha todos os campos");
+            newUserCpfAlert.gameObject.SetActive(true);
+            newUserNameAlert.gameObject.SetActive(true);
+            newUserEmailAlert.gameObject.SetActive(true);
+
+            newUserEmailAlert.text = "Todos os campos precisam ser preencidos.";
+            newUserCpfAlert.text = "Todos os campos precisam ser preencidos.";
+
+        }
+        else if (!email.Contains("@"))
+        {
+            newUserEmailAlert.gameObject.SetActive(true);
+            newUserEmailAlert.text = "O Email está no formato errado (falta do @)";
+            newUserCpfAlert.gameObject.SetActive(false);
+            newUserNameAlert.gameObject.SetActive(false);
+        }
+        else if (cpf.Length < 11)
+        {
+            newUserCpfAlert.gameObject.SetActive(true);
+            newUserCpfAlert.text = "O CPf não pode ter menos de 11 caracteres.";
+            newUserEmailAlert.gameObject.SetActive(false);
+            newUserNameAlert.gameObject.SetActive(false);
+        }
+        else
+        {
+            db.createNewUser(cpf, name, email, hierarchy);
+            newUserEmailAlert.gameObject.SetActive(false);
+            newUserNameAlert.gameObject.SetActive(false);
+            newUserCpfAlert.gameObject.SetActive(false);
+
+            newUserName.text = "";
+            newUserEmail.text = "";
+            newUserCpf.text = "";
+        }
+
     }
 
     private IEnumerator setUserPhotoProfile()
@@ -176,9 +271,23 @@ public class EmployeeScript : MonoBehaviour
         }
     }
 
+    private IEnumerator setEmployeesPhotoProfile(string cpf, GameObject employeeProfilePhoto)
+    {
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/uploads%2F" + cpf + ".jpeg?alt=media&token=");
+        yield return request.SendWebRequest();
+        if (request.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.Log(request.error);
+        }
+        else
+        {
+            Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+            employeeProfilePhoto.GetComponentInChildren<RawImage>().texture = texture;
+
+        }
+    }
 
 
 
-    
 
 }

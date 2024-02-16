@@ -65,4 +65,17 @@ public class DatabaseManager
         return null;
 
     }
+
+    public void removeUser(string cpf)
+    {
+        db.Child("users").Child(cpf).RemoveValueAsync();
+    }
+
+    public void createNewUser(string cpf, string Name, string Email, string Hierarchy)
+    {
+        db.Child("users").Child(cpf).Child("Name").SetValueAsync(Name);
+        db.Child("users").Child(cpf).Child("Email").SetValueAsync(Email);
+        db.Child("users").Child(cpf).Child("Hierarchy").SetValueAsync(Hierarchy);
+        db.Child("users").Child(cpf).Child("ProfilePhoto").SetValueAsync(cpf + ".jpeg");
+    }
 }
