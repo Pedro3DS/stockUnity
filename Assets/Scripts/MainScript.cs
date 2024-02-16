@@ -21,7 +21,7 @@ public class MainScript : MonoBehaviour
     public async void starByHierarchy()
     {
         var cpf = inpCpf.text.Replace(".", "").Replace("-", "");
-        PlayerPrefs.SetString("Cpf" ,cpf);
+        PlayerPrefs.SetString("Cpf" ,"123");
         database.getCpf(cpf);
 
         string hierarchy = await database.checkHierarchy();
