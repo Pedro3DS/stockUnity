@@ -127,7 +127,16 @@ public class EmployeeScript : MonoBehaviour
 
     public async void usersPanel()
     {
-        Debug.Log(usersAreaPanel.GetComponentsInChildren<GameObject>());
+
+        Transform childTransforms = usersAreaPanel.GetComponentInChildren<Transform>();
+
+        foreach (Transform childTransform in childTransforms)
+        {
+            Destroy(childTransform.gameObject);
+        }
+
+
+
         DataSnapshot usersSnapshots = await db.getUsersDatas();
 
 
@@ -136,6 +145,7 @@ public class EmployeeScript : MonoBehaviour
             createUsersInfos(usersSnapshots.Child(usersKeys.Key).Child("Name").Value.ToString(), usersSnapshots.Child(usersKeys.Key).Child("Hierarchy").Value.ToString());
         }
 
+        
     }
 
     public void createUsersInfos(string name, string hierarchy)
