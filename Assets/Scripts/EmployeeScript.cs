@@ -65,6 +65,7 @@ public class EmployeeScript : MonoBehaviour
 
     async void Start()
     {
+        PlayerPrefs.SetString("Cpf", "123");
         db = new DatabaseManager();
         db.Start();
 
@@ -73,6 +74,7 @@ public class EmployeeScript : MonoBehaviour
 
         storage = FirebaseStorage.DefaultInstance;
         storageReference = storage.GetReferenceFromUrl("gs://stockunity-46765.appspot.com");
+
     }
 
     public void setUserInformations()

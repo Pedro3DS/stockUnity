@@ -78,4 +78,17 @@ public class DatabaseManager
         db.Child("users").Child(cpf).Child("Hierarchy").SetValueAsync(Hierarchy);
         db.Child("users").Child(cpf).Child("ProfilePhoto").SetValueAsync(cpf + ".jpeg");
     }
+
+    public async Task<DataSnapshot> getProductsData()
+    {
+        DatabaseReference newProductsDatas = db.Child("products");
+        DataSnapshot snapshot = await newProductsDatas.GetValueAsync();
+        if (snapshot.Exists)
+        {
+            return snapshot;
+        }
+        return null;
+
+    }
+
 }
