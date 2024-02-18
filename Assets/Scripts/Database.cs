@@ -91,4 +91,11 @@ public class DatabaseManager
 
     }
 
+    public void updateProduct(string code, string Name, string Value, string Quantity)
+    {
+        db.Child("products").Child(code).Child("Name").SetValueAsync(Name);
+        db.Child("products").Child(code).Child("Value").SetValueAsync(Value);
+        db.Child("products").Child(code).Child("Quantity").SetValueAsync(Quantity);
+    }
+
 }

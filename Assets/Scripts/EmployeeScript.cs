@@ -44,6 +44,15 @@ public class EmployeeScript : MonoBehaviour
     public TMP_InputField newUserCpf;
     public TMP_Dropdown newUserHierarchy;
 
+    /*List Panel*/
+    [Header("List Panel")]
+    public GameObject productBtnModel;
+    public Transform productAreaPanel;
+    private GameObject selectedProduct;
+    public GameObject editProductPanel;
+    public TMP_Text editProductCode;
+
+
     /*All Panel*/
     [Header("Geral Panel's")]
     public RawImage userBtnImg;
@@ -55,7 +64,6 @@ public class EmployeeScript : MonoBehaviour
     private DataSnapshot userSnapshot;
 
     private DatabaseManager db;
-    private string cpfT = "123";
 
     public UnityEvent Function_onPicked_Return; // Visual Scripting trigger [On Unity Event]
     public UnityEvent Function_onSaved_Return; // Visual Scripting trigger [On Unity Event]
@@ -255,6 +263,106 @@ public class EmployeeScript : MonoBehaviour
             newUserCpf.text = "";
         }
 
+    }
+
+    public async void listPanel()
+    {
+        clearListAreaPanel();
+
+        DataSnapshot productsSnapshots = await db.getProductsData();
+
+        foreach (var productKeys in productsSnapshots.Children)
+        {
+            string code = productKeys.Key;
+            string name = productsSnapshots.Child(productKeys.Key).Child("Name").Value.ToString();
+            string value = productsSnapshots.Child(productKeys.Key).Child("Value").Value.ToString();
+            string quantity = productsSnapshots.Child(productKeys.Key).Child("Quantity").Value.ToString();
+            createListInfos(code, name, value, quantity);
+        }
+
+    }
+
+    public void searchProducts(TMP_InputField searchInp)
+    {
+        string searchString = searchInp.text.FirstCharacterToUpper();
+        Transform childTransforms = productAreaPanel.GetComponentInChildren<Transform>();
+        
+        if (searchString != "")
+        {
+            foreach (Transform childTransform in childTransforms)
+            {
+                if (!childTransform.name.Contains(searchString))
+                {
+                    childTransform.gameObject.SetActive(false);
+                }
+                else
+                {
+                    childTransform.gameObject.SetActive(true);
+                }
+
+            }
+        }
+        else
+        {
+            foreach (Transform childTransform in childTransforms)
+            {
+                childTransform.gameObject.SetActive(true);
+
+            }
+        }
+    }
+
+    public async void setSelectedProduct(GameObject thisProduct)
+    {
+        editProductPanel.SetActive(true);
+        DataSnapshot products = await db.getProductsData();
+
+        DataSnapshot selectedProductSnapshot = products.Child(thisProduct.GetComponentsInChildren<TMP_Text>()[0].text);
+
+        editProductCode.text = "Código do produto: " + selectedProductSnapshot.Key;
+        editProductPanel.GetComponentsInChildren<TMP_InputField>()[0].text = products.Child(selectedProductSnapshot.Key).Child("Name").Value.ToString();
+        editProductPanel.GetComponentsInChildren<TMP_InputField>()[1].text = products.Child(selectedProductSnapshot.Key).Child("Value").Value.ToString();
+        editProductPanel.GetComponentsInChildren<TMP_InputField>()[2].text = products.Child(selectedProductSnapshot.Key).Child("Quantity").Value.ToString();
+
+        selectedProduct = thisProduct.gameObject;
+    }
+
+    private void clearListAreaPanel()
+    {
+        Transform childTransforms = productAreaPanel.GetComponentInChildren<Transform>();
+
+        foreach (Transform childTransform in childTransforms)
+        {
+            Destroy(childTransform.gameObject);
+        }
+    }
+
+    private void createListInfos(string code, string name, string value, string quantity)
+    {
+        GameObject newUserInfotmation = Instantiate(productBtnModel, productAreaPanel);
+        newUserInfotmation.SetActive(true);
+        newUserInfotmation.name = name;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[0].text = code;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[1].text = name;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[2].text = "R$ " + value;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[3].text = "Quantidade: " + quantity;
+
+    }
+
+    private IEnumerator setProductPhoto()
+    {
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/uploads%2F" + userSnapshot.Child("ProfilePhoto").Value.ToString() + "?alt=media&token=");
+        yield return request.SendWebRequest();
+        if (request.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.Log(request.error);
+        }
+        else
+        {
+            Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+            userBtnImg.texture = texture;
+            userImg.texture = texture;
+        }
     }
 
     private IEnumerator setUserPhotoProfile()
