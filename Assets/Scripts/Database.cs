@@ -98,4 +98,9 @@ public class DatabaseManager
         db.Child("products").Child(code).Child("Quantity").SetValueAsync(Quantity);
     }
 
+    public void removeProduct(string code)
+    {
+        db.Child("products").Child(code).RemoveValueAsync();
+    }
+
 }

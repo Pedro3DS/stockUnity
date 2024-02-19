@@ -52,6 +52,8 @@ public class EmployeeScript : MonoBehaviour
     public GameObject editProductPanel;
     public TMP_Text editProductCode;
     public DataSnapshot selectedProductInfo;
+    public UnityEngine.UI.Button removeProductBtnConfirm;
+    public GameObject removeProductPanel;
 
 
     /*All Panel*/
@@ -335,6 +337,22 @@ public class EmployeeScript : MonoBehaviour
         StartCoroutine(ShowLoadDialogCoroutineProduct());
     }
 
+    public void updateProductInfotmation()
+    {
+        string code = selectedProductInfo.Key;
+        string Name = selectedProduct.GetComponentsInChildren<TMP_InputField>()[0].text;
+        string Value = selectedProduct.GetComponentsInChildren<TMP_InputField>()[1].text;
+        string Quantity = selectedProduct.GetComponentsInChildren<TMP_InputField>()[2].text;
+        db.updateProduct(code, Name, Value, Quantity);
+    }
+
+    public void removeProduct()
+    {
+        db.removeProduct(selectedProductInfo.Key);
+        selectedProduct.SetActive(false);
+        removeProductPanel.SetActive(false);
+    }
+
     private void clearListAreaPanel()
     {
         Transform childTransforms = productAreaPanel.GetComponentInChildren<Transform>();
@@ -354,6 +372,8 @@ public class EmployeeScript : MonoBehaviour
         newUserInfotmation.GetComponentsInChildren<TMP_Text>()[1].text = name;
         newUserInfotmation.GetComponentsInChildren<TMP_Text>()[2].text = "R$ " + value;
         newUserInfotmation.GetComponentsInChildren<TMP_Text>()[3].text = "Quantidade: " + quantity;
+
+        StartCoroutine(setProductsPhotos(code, newUserInfotmation));
 
     }
 
@@ -409,6 +429,21 @@ public class EmployeeScript : MonoBehaviour
         {
             Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
             selectedProduct.gameObject.GetComponentInChildren<RawImage>().texture = texture;
+        }
+    }
+
+    private IEnumerator setProductsPhotos(string productCode, GameObject productObject)
+    {
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/products%2F" + productCode + ".jpeg?alt=media&token=");
+        yield return request.SendWebRequest();
+        if (request.result == UnityWebRequest.Result.ProtocolError)
+        {
+            Debug.Log(request.error);
+        }
+        else
+        {
+            Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+            productObject.gameObject.GetComponentInChildren<RawImage>().texture = texture;
         }
     }
 
