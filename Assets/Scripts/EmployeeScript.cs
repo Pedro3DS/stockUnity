@@ -51,6 +51,7 @@ public class EmployeeScript : MonoBehaviour
     private GameObject selectedProduct;
     public GameObject editProductPanel;
     public TMP_Text editProductCode;
+    public DataSnapshot selectedProductInfo;
 
 
     /*All Panel*/
@@ -317,14 +318,21 @@ public class EmployeeScript : MonoBehaviour
         editProductPanel.SetActive(true);
         DataSnapshot products = await db.getProductsData();
 
-        DataSnapshot selectedProductSnapshot = products.Child(thisProduct.GetComponentsInChildren<TMP_Text>()[0].text);
+        selectedProductInfo = products.Child(thisProduct.GetComponentsInChildren<TMP_Text>()[0].text);
 
-        editProductCode.text = "Código do produto: " + selectedProductSnapshot.Key;
-        editProductPanel.GetComponentsInChildren<TMP_InputField>()[0].text = products.Child(selectedProductSnapshot.Key).Child("Name").Value.ToString();
-        editProductPanel.GetComponentsInChildren<TMP_InputField>()[1].text = products.Child(selectedProductSnapshot.Key).Child("Value").Value.ToString();
-        editProductPanel.GetComponentsInChildren<TMP_InputField>()[2].text = products.Child(selectedProductSnapshot.Key).Child("Quantity").Value.ToString();
+        editProductCode.text = "Código do produto: " + selectedProductInfo.Key;
+        editProductPanel.GetComponentsInChildren<TMP_InputField>()[0].text = selectedProductInfo.Child("Name").Value.ToString();
+        editProductPanel.GetComponentsInChildren<TMP_InputField>()[1].text = selectedProductInfo.Child("Value").Value.ToString();
+        editProductPanel.GetComponentsInChildren<TMP_InputField>()[2].text = selectedProductInfo.Child("Quantity").Value.ToString();
 
-        selectedProduct = thisProduct.gameObject;
+        StartCoroutine(setProductPhoto(selectedProductInfo.Child("ProductPhoto").Value.ToString())); ;
+
+        selectedProduct = editProductPanel.gameObject;
+    }
+
+    public void changeProductPhoto()
+    {
+        StartCoroutine(ShowLoadDialogCoroutineProduct());
     }
 
     private void clearListAreaPanel()
@@ -349,9 +357,49 @@ public class EmployeeScript : MonoBehaviour
 
     }
 
-    private IEnumerator setProductPhoto()
+    IEnumerator ShowLoadDialogCoroutineProduct()
     {
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/uploads%2F" + userSnapshot.Child("ProfilePhoto").Value.ToString() + "?alt=media&token=");
+        yield return NativeFilePicker.PickFile((paths) =>
+        {
+            if (paths != null && paths.Length > 0)
+            {
+                Debug.Log("File Selected: " + paths[0]);
+
+                // Read the selected file into bytes
+                byte[] bytes = File.ReadAllBytes(paths);
+
+                // Editing Metadata
+                var newMetadata = new MetadataChange();
+                newMetadata.ContentType = "image/jpeg";
+
+                // Create a reference to where the file needs to be uploaded
+                StorageReference uploadRef = storageReference.Child("products/" + selectedProductInfo.Child("ProductPhoto").Value.ToString());
+                Debug.Log("File upload started");
+
+                // Upload the file to Firebase Storage
+                uploadRef.PutBytesAsync(bytes, newMetadata).ContinueWithOnMainThread((task) =>
+                {
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        Debug.LogError(task.Exception.ToString());
+                    }
+                    else
+                    {
+                        Debug.Log("File Uploaded Successfully!");
+                        StartCoroutine(setProductPhoto(selectedProductInfo.Child("ProductPhoto").Value.ToString()));
+                    }
+                });
+            }
+            else
+            {
+                Debug.Log("File selection canceled");
+            }
+        });
+    }
+
+    private IEnumerator setProductPhoto(string productPhoto)
+    {
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture("https://firebasestorage.googleapis.com/v0/b/stockunity-46765.appspot.com/o/products%2F" + productPhoto + "?alt=media&token=");
         yield return request.SendWebRequest();
         if (request.result == UnityWebRequest.Result.ProtocolError)
         {
@@ -360,8 +408,7 @@ public class EmployeeScript : MonoBehaviour
         else
         {
             Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
-            userBtnImg.texture = texture;
-            userImg.texture = texture;
+            selectedProduct.gameObject.GetComponentInChildren<RawImage>().texture = texture;
         }
     }
 
