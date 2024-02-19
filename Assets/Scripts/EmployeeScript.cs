@@ -351,6 +351,7 @@ public class EmployeeScript : MonoBehaviour
         db.removeProduct(selectedProductInfo.Key);
         selectedProduct.SetActive(false);
         removeProductPanel.SetActive(false);
+        listPanel();
     }
 
     private void clearListAreaPanel()
