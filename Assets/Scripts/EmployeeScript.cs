@@ -55,6 +55,10 @@ public class EmployeeScript : MonoBehaviour
     public UnityEngine.UI.Button removeProductBtnConfirm;
     public GameObject removeProductPanel;
 
+    public GameObject addProductPanel;
+    public TMP_Text addProductCode;
+    private string newProductCode;
+
 
     /*All Panel*/
     [Header("Geral Panel's")]
@@ -352,6 +356,38 @@ public class EmployeeScript : MonoBehaviour
         selectedProduct.SetActive(false);
         removeProductPanel.SetActive(false);
         listPanel();
+    }
+
+    public void createProductArea()
+    {
+        System.Random rand = new System.Random();
+        int num1 = rand.Next(1, 9);
+        int num2 = rand.Next(1, 9);
+        int num3 = rand.Next(1, 9);
+        newProductCode = $"78940028{num1}{num2}{num3}{num1 + num2 + num3}";
+        addProductPanel.SetActive(true);
+        addProductCode.text = "O código do produto irá ser: " + newProductCode;
+    }
+
+    public void createNewProduct()
+    {
+        string name = addProductCode.GetComponentsInChildren<TMP_InputField>()[1].text.FirstCharacterToUpper();
+        string value = addProductCode.GetComponentsInChildren<TMP_InputField>()[2].text.FirstCharacterToUpper();
+        string quantity = addProductCode.GetComponentsInChildren<TMP_InputField>()[3].text.FirstCharacterToUpper();
+
+        if (value == "")
+        {
+            value = "0";
+        }
+        if (quantity == "")
+        {
+            quantity = "0";
+        }
+        db.createProduct(newProductCode, name, value, quantity);
+
+        addProductCode.GetComponentsInChildren<TMP_InputField>()[1].text = "";
+        addProductCode.GetComponentsInChildren<TMP_InputField>()[2].text = "";
+        addProductCode.GetComponentsInChildren<TMP_InputField>()[3].text = "";
     }
 
     private void clearListAreaPanel()
