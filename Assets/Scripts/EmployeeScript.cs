@@ -58,7 +58,14 @@ public class EmployeeScript : MonoBehaviour
     public GameObject addProductPanel;
     public TMP_Text addProductCode;
     private string newProductCode;
+    public TMP_InputField addProductName;
+    public TMP_InputField addProductValue;
+    public TMP_InputField addProductQuantity;
+    public TMP_Text addProductNameAlert;
 
+    [Header("Home Panel")]
+    public GameObject lowProductBtnModel;
+    public Transform lowProductAreaPanel;
 
     /*All Panel*/
     [Header("Geral Panel's")]
@@ -80,7 +87,7 @@ public class EmployeeScript : MonoBehaviour
 
     async void Start()
     {
-        PlayerPrefs.SetString("Cpf", "123");
+        
         db = new DatabaseManager();
         db.Start();
 
@@ -90,6 +97,8 @@ public class EmployeeScript : MonoBehaviour
         storage = FirebaseStorage.DefaultInstance;
         storageReference = storage.GetReferenceFromUrl("gs://stockunity-46765.appspot.com");
 
+        homePanel();
+
     }
 
     public void setUserInformations()
@@ -97,6 +106,10 @@ public class EmployeeScript : MonoBehaviour
         userName.text = userSnapshot.Child("Name").Value.ToString();
         userEmail.text = userSnapshot.Child("Email").Value.ToString();
         if (userSnapshot.Child("Hierarchy").Value.ToString() == "employee")
+        {
+            userHierarchy.text = "Gerente";
+        }
+        else
         {
             userHierarchy.text = "Funcionario Normal";
         }
@@ -185,6 +198,14 @@ public class EmployeeScript : MonoBehaviour
         GameObject newUserInfotmation = Instantiate(usersBtnModel, usersAreaPanel);
         newUserInfotmation.SetActive(true);
         newUserInfotmation.name = cpf;
+        if (hierarchy == "employee")
+        {
+            hierarchy = "Gerente";
+        }
+        else
+        {
+            hierarchy = "Funcionario Normal";
+        }
         newUserInfotmation.GetComponentInChildren<TMP_Text>().text = $"{name}\n{hierarchy}";
         StartCoroutine(setEmployeesPhotoProfile(cpf, newUserInfotmation));
         
@@ -230,7 +251,7 @@ public class EmployeeScript : MonoBehaviour
         }
         else
         {
-            hierarchy = "manager";
+            hierarchy = "normalEmployee";
         }
 
         if (name == "" || email == "" || cpf == "")
@@ -348,6 +369,7 @@ public class EmployeeScript : MonoBehaviour
         string Value = selectedProduct.GetComponentsInChildren<TMP_InputField>()[1].text;
         string Quantity = selectedProduct.GetComponentsInChildren<TMP_InputField>()[2].text;
         db.updateProduct(code, Name, Value, Quantity);
+        listPanel();
     }
 
     public void removeProduct()
@@ -371,9 +393,9 @@ public class EmployeeScript : MonoBehaviour
 
     public void createNewProduct()
     {
-        string name = addProductCode.GetComponentsInChildren<TMP_InputField>()[1].text.FirstCharacterToUpper();
-        string value = addProductCode.GetComponentsInChildren<TMP_InputField>()[2].text.FirstCharacterToUpper();
-        string quantity = addProductCode.GetComponentsInChildren<TMP_InputField>()[3].text.FirstCharacterToUpper();
+        string name = addProductName.text.FirstCharacterToUpper();
+        string value = addProductValue.text.FirstCharacterToUpper();
+        string quantity = addProductQuantity.text.FirstCharacterToUpper();
 
         if (value == "")
         {
@@ -383,11 +405,65 @@ public class EmployeeScript : MonoBehaviour
         {
             quantity = "0";
         }
-        db.createProduct(newProductCode, name, value, quantity);
+        if (name == "")
+        {
+            addProductNameAlert.text = "O produto nescessita de um nome";
+        }
+        else
+        {
+            db.createProduct(newProductCode, name, value, quantity);
+            addProductNameAlert.text = "";
+            addProductName.text = "";
+            addProductValue.text = "";
+            addProductQuantity.text = "";
 
-        addProductCode.GetComponentsInChildren<TMP_InputField>()[1].text = "";
-        addProductCode.GetComponentsInChildren<TMP_InputField>()[2].text = "";
-        addProductCode.GetComponentsInChildren<TMP_InputField>()[3].text = "";
+            listPanel();
+        }   
+    }
+
+    public async void homePanel()
+    {
+        clearHomeAreaPanel();
+
+        DataSnapshot productsSnapshots = await db.getProductsData();
+
+        foreach (var productKeys in productsSnapshots.Children)
+        {
+            if (Int32.Parse(productsSnapshots.Child(productKeys.Key).Child("Quantity").Value.ToString()) <= 50)
+            {
+                string code = productKeys.Key;
+                string name = productsSnapshots.Child(productKeys.Key).Child("Name").Value.ToString();
+                string value = productsSnapshots.Child(productKeys.Key).Child("Value").Value.ToString();
+                string quantity = productsSnapshots.Child(productKeys.Key).Child("Quantity").Value.ToString();
+                createHomeInfos(code, name, value, quantity);
+            }
+            
+        }
+
+    }
+
+    private void clearHomeAreaPanel()
+    {
+        Transform childTransforms = lowProductAreaPanel.GetComponentInChildren<Transform>();
+
+        foreach (Transform childTransform in childTransforms)
+        {
+            Destroy(childTransform.gameObject);
+        }
+    }
+
+    private void createHomeInfos(string code, string name, string value, string quantity)
+    {
+        GameObject newUserInfotmation = Instantiate(lowProductBtnModel, lowProductAreaPanel);
+        newUserInfotmation.SetActive(true);
+        newUserInfotmation.name = name;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[0].text = code;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[1].text = name;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[2].text = "R$ " + value;
+        newUserInfotmation.GetComponentsInChildren<TMP_Text>()[3].text = "Quantidade: " + quantity;
+
+        StartCoroutine(setProductsPhotos(code, newUserInfotmation));
+
     }
 
     private void clearListAreaPanel()

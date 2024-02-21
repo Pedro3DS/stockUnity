@@ -12,8 +12,8 @@ EditorBuildSettings:
     path: Assets/Scenes/EmployeeScene.unity
     guid: 5bb626379be69684898ef696155eab59
   - enabled: 1
-    path: Assets/Scenes/ManagerScene.unity
-    guid: 71bfd61591cd86a4ca7ea8660cd10711
+    path: Assets/Scenes/NormalEmployeeScene.unity
+    guid: 105399b7150f9cd479c8ab5eb4fe22ed
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 25704e5f28a666849ba4048ca00e49be, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: f688fcc279dd6f449a91b89db2527ec5, type: 2}

@@ -21,7 +21,7 @@ public class MainScript : MonoBehaviour
     public async void starByHierarchy()
     {
         var cpf = inpCpf.text.Replace(".", "").Replace("-", "");
-        PlayerPrefs.SetString("Cpf" ,"123");
+        PlayerPrefs.SetString("Cpf", cpf);
         database.getCpf(cpf);
 
         string hierarchy = await database.checkHierarchy();
@@ -32,11 +32,8 @@ public class MainScript : MonoBehaviour
                 case "employee":
                     SceneManager.LoadScene("EmployeeScene");
                     break;
-                case "manager":
-                    SceneManager.LoadScene("ManagerScene");
-                    break;
-                case "director":
-                    SceneManager.LoadScene("DirectorScene");
+                case "normalEmployee":
+                    SceneManager.LoadScene("NormalEmployeeScene");
                     break;
                 default:
                     break;
